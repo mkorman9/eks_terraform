@@ -3,8 +3,8 @@ locals {
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: ${var.service_account}
-  namespace: ${var.namespace}
+  name: ${var.app_role_service_account}
+  namespace: ${var.app_role_namespace}
   annotations:
     eks.amazonaws.com/role-arn: ${aws_iam_role.app_role.arn}
 automountServiceAccountToken: true

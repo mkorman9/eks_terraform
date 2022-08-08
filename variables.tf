@@ -20,13 +20,13 @@ variable "instances" {
   default     = 1
 }
 
-variable "namespace" {
-  description = "Cluster namespace (by default: default)"
+variable "app_role_namespace" {
+  description = "Cluster namespace to associate app role with (by default: default)"
   type        = string
   default     = "default"
 }
 
-variable "service_account" {
+variable "app_role_service_account" {
   description = "Name of service account to associate with app role"
   type        = string
   default     = "app"
