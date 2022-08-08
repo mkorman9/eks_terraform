@@ -19,3 +19,15 @@ variable "instances" {
   type        = number
   default     = 1
 }
+
+variable "namespace" {
+  description = "Cluster namespace (by default: default)"
+  type        = string
+  default     = "default"
+}
+
+variable "service_account" {
+  description = "Name of service account to associate with app role"
+  type        = string
+  default     = "app"
+}
