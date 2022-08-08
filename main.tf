@@ -47,6 +47,10 @@ resource "aws_iam_role" "cluster" {
   ]
 }
 POLICY
+
+  tags = {
+    Environment = var.environment
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "cluster-AmazonEKSClusterPolicy" {
@@ -76,6 +80,10 @@ resource "aws_iam_role" "instance" {
   ]
 }
 POLICY
+
+  tags = {
+    Environment = var.environment
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "instance-AmazonEKSWorkerNodePolicy" {
@@ -96,6 +104,53 @@ resource "aws_iam_role_policy_attachment" "instance-AmazonEC2ContainerRegistryRe
 resource "aws_iam_instance_profile" "instance" {
   name = "${var.environment}-eks-instance-profile"
   role = aws_iam_role.instance.name
+}
+
+data "tls_certificate" "cluster_cert" {
+  url = aws_eks_cluster.cluster.identity[0].oidc[0].issuer
+}
+
+resource "aws_iam_openid_connect_provider" "openid_provider" {
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.cluster_cert.certificates[0].sha1_fingerprint]
+  url             = aws_eks_cluster.cluster.identity[0].oidc[0].issuer
+}
+
+data "aws_iam_policy_document" "openid_policy" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    effect  = "Allow"
+
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.openid_provider.url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:aws-node"]
+    }
+
+    principals {
+      identifiers = [aws_iam_openid_connect_provider.openid_provider.arn]
+      type        = "Federated"
+    }
+  }
+}
+
+resource "aws_iam_role" "app_role" {
+  assume_role_policy = data.aws_iam_policy_document.openid_policy.json
+  name               = "${var.environment}-app-role"
+
+  tags = {
+    Environment = var.environment
+  }
+}
+
+data "template_file" "app_role_policy" {
+  template = file("${path.module}/policies/app_role_policy.json")
+}
+
+resource "aws_iam_role_policy" "app_role_policy" {
+  name   = "${var.environment}-app-role-policy"
+  role   = aws_iam_role.app_role.name
+  policy = data.template_file.app_role_policy.rendered
 }
 
 /*
