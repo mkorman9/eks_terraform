@@ -25,6 +25,14 @@ module "vpc" {
   tags = {
     Environment = var.environment
   }
+
+  public_subnet_tags = tomap({
+    "kubernetes.io/role/elb" = "1"
+  })
+
+  private_subnet_tags = tomap({
+    "kubernetes.io/role/internal-elb" = "1"
+  })
 }
 
 /*
