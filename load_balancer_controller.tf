@@ -1,16 +1,3 @@
-locals {
-  lb-controller-service-account-manifest = <<SERVICEACCOUNT
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: aws-load-balancer-controller
-  namespace: kube-system
-  annotations:
-    eks.amazonaws.com/role-arn: ${aws_iam_role.lb_controller.arn}
-automountServiceAccountToken: true
-SERVICEACCOUNT
-}
-
 data "http" "lb_iam_policy" {
   url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.4.2/docs/install/iam_policy.json"
 }
@@ -51,7 +38,16 @@ resource "aws_iam_role_policy" "lb_controller_policy" {
 resource "kubectl_manifest" "lb_controller_manifest" {
   depends_on = [aws_eks_cluster.cluster]
 
-  yaml_body = local.lb-controller-service-account-manifest
+  yaml_body = <<SERVICEACCOUNT
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aws-load-balancer-controller
+  namespace: kube-system
+  annotations:
+    eks.amazonaws.com/role-arn: ${aws_iam_role.lb_controller.arn}
+automountServiceAccountToken: true
+SERVICEACCOUNT
 }
 
 resource "helm_release" "lb_controller" {
