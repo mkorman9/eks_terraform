@@ -1,6 +1,7 @@
 # Prerequisites
 - Terraform installed
 - aws-cli installed
+- kubectl installed
 - AWS Credentials set up
 
 # Usage
