@@ -49,5 +49,6 @@ resource "aws_iam_role_policy" "app_role_policy" {
 }
 
 resource "kubectl_manifest" "app_role_manifest" {
+  depends_on = [aws_eks_cluster.cluster]
   yaml_body = local.app-service-account-manifest
 }

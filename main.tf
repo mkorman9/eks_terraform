@@ -228,17 +228,13 @@ resource "aws_eks_node_group" "node_group" {
   }
 }
 
-resource "null_resource" "create_kubernetes_namespace" {
-  triggers = {
-    build_number = "${timestamp()}"
-  }
+resource "kubectl_manifest" "create_kubernetes_namespace" {
+  depends_on = [aws_eks_cluster.cluster]
 
-  provisioner "local-exec" {
-    command = <<SCRIPT
-      n=$(kubectl get namespaces | grep ${var.namespace} | wc -l)
-      if [ "$n" -eq "0" ]; then
-          kubectl create namespace ${var.namespace}
-      fi
-    SCRIPT
-  }
+  yaml_body = <<YAML
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${var.namespace}
+YAML
 }
