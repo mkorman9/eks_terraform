@@ -228,7 +228,7 @@ resource "aws_eks_node_group" "node_group" {
   }
 }
 
-resource "kubectl_manifest" "create_kubernetes_namespace" {
+resource "kubectl_manifest" "project_namespace" {
   depends_on = [aws_eks_cluster.cluster]
 
   yaml_body = <<YAML
