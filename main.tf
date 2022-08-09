@@ -227,3 +227,18 @@ resource "aws_eks_node_group" "node_group" {
     Environment = var.environment
   }
 }
+
+resource "null_resource" "create_kubernetes_namespace" {
+  triggers = {
+    build_number = "${timestamp()}"
+  }
+
+  provisioner "local-exec" {
+    command = <<SCRIPT
+      n=$(kubectl get namespaces | grep ${var.namespace} | wc -l)
+      if [ "$n" -eq "0" ]; then
+          kubectl create namespace ${var.namespace}
+      fi
+    SCRIPT
+  }
+}

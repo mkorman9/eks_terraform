@@ -4,7 +4,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: ${var.app_role_service_account}
-  namespace: ${var.app_role_namespace}
+  namespace: ${var.namespace}
   annotations:
     eks.amazonaws.com/role-arn: ${aws_iam_role.app_role.arn}
 automountServiceAccountToken: true
@@ -19,7 +19,7 @@ data "aws_iam_policy_document" "app_role_openid_policy" {
     condition {
       test     = "StringEquals"
       variable = "${replace(aws_iam_openid_connect_provider.openid_provider.url, "https://", "")}:sub"
-      values   = ["system:serviceaccount:${var.app_role_namespace}:${var.app_role_service_account}"]
+      values   = ["system:serviceaccount:${var.namespace}:${var.app_role_service_account}"]
     }
 
     principals {
