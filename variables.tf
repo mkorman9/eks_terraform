@@ -9,9 +9,9 @@ variable "aws_region" {
 }
 
 variable "instance_type" {
-  description = "Type of instance inside Autoscaling group. By default: t2.micro"
+  description = "Type of instance inside Autoscaling group. By default: t3.medium"
   type        = string
-  default     = "t2.micro"
+  default     = "t3.medium"
 }
 
 variable "instances" {
