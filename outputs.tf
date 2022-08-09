@@ -1,15 +1,4 @@
 locals {
-  service-account = <<SERVICEACCOUNT
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: ${var.app_role_service_account}
-  namespace: ${var.app_role_namespace}
-  annotations:
-    eks.amazonaws.com/role-arn: ${aws_iam_role.app_role.arn}
-automountServiceAccountToken: true
-SERVICEACCOUNT
-
   kubeconfig = <<KUBECONFIG
 apiVersion: v1
 clusters:
@@ -39,10 +28,6 @@ users:
         - "--region"
         - "${var.aws_region}"
 KUBECONFIG
-}
-
-output "service-account-yml" {
-  value = local.service-account
 }
 
 output "kubeconfig" {

@@ -1,3 +1,16 @@
+locals {
+  app-service-account-manifest = <<SERVICEACCOUNT
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ${var.app_role_service_account}
+  namespace: ${var.app_role_namespace}
+  annotations:
+    eks.amazonaws.com/role-arn: ${aws_iam_role.app_role.arn}
+automountServiceAccountToken: true
+SERVICEACCOUNT
+}
+
 data "aws_iam_policy_document" "app_role_openid_policy" {
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
@@ -33,4 +46,8 @@ resource "aws_iam_role_policy" "app_role_policy" {
   name   = "${var.environment}-app-role-policy"
   role   = aws_iam_role.app_role.name
   policy = data.template_file.app_role_policy.rendered
+}
+
+resource "kubectl_manifest" "app_role_manifest" {
+  yaml_body = local.app-service-account-manifest
 }
