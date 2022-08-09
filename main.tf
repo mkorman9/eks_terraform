@@ -201,7 +201,7 @@ resource "aws_eks_cluster" "cluster" {
   ]
 }
 
-resource "aws_eks_node_group" "node_group" {
+resource "aws_eks_node_group" "default_node_group" {
   cluster_name    = local.cluster_name
   node_group_name = "${var.environment}-default-node-group"
   node_role_arn   = aws_iam_role.instance.arn

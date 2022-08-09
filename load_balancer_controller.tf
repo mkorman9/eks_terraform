@@ -55,7 +55,7 @@ resource "kubectl_manifest" "lb_controller_manifest" {
 }
 
 resource "helm_release" "lb_controller" {
-  depends_on = [aws_eks_cluster.cluster]
+  depends_on = [aws_eks_node_group.default_node_group]
 
   name       = "aws-load-balancer-controller"
   chart      = "aws-load-balancer-controller"
