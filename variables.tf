@@ -8,14 +8,14 @@ variable "aws_region" {
   type        = string
 }
 
-variable "instance_type" {
-  description = "Type of instance inside Autoscaling group. By default: t3.medium"
+variable "node_type" {
+  description = "Type of node inside autoscaling group. By default: t3.medium"
   type        = string
   default     = "t3.medium"
 }
 
-variable "instances" {
-  description = "Instance count in the cluster"
+variable "nodes" {
+  description = "Nodes count in the cluster"
   type        = number
   default     = 1
 }

@@ -216,13 +216,13 @@ resource "aws_eks_node_group" "default_node_group" {
   subnet_ids      = module.vpc.public_subnets
 
   scaling_config {
-    desired_size = var.instances
-    max_size     = var.instances
-    min_size     = var.instances
+    desired_size = var.nodes
+    max_size     = var.nodes
+    min_size     = var.nodes
   }
 
   instance_types = [
-    var.instance_type
+    var.node_type
   ]
 
   depends_on = [
