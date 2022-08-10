@@ -71,8 +71,8 @@ resource "aws_iam_role_policy_attachment" "cluster-AmazonEKSServicePolicy" {
   role       = aws_iam_role.cluster.name
 }
 
-resource "aws_iam_role" "instance" {
-  name = "${var.environment}-eks-instance-role"
+resource "aws_iam_role" "node" {
+  name = "${var.environment}-eks-node-role"
 
   assume_role_policy = <<POLICY
 {
@@ -94,24 +94,24 @@ POLICY
   }
 }
 
-resource "aws_iam_role_policy_attachment" "instance-AmazonEKSWorkerNodePolicy" {
+resource "aws_iam_role_policy_attachment" "node-AmazonEKSWorkerNodePolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-  role       = aws_iam_role.instance.name
+  role       = aws_iam_role.node.name
 }
 
-resource "aws_iam_role_policy_attachment" "instance-AmazonEKS_CNI_Policy" {
+resource "aws_iam_role_policy_attachment" "node-AmazonEKS_CNI_Policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.instance.name
+  role       = aws_iam_role.node.name
 }
 
-resource "aws_iam_role_policy_attachment" "instance-AmazonEC2ContainerRegistryReadOnly" {
+resource "aws_iam_role_policy_attachment" "node-AmazonEC2ContainerRegistryReadOnly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role       = aws_iam_role.instance.name
+  role       = aws_iam_role.node.name
 }
 
-resource "aws_iam_instance_profile" "instance" {
-  name = "${var.environment}-eks-instance-profile"
-  role = aws_iam_role.instance.name
+resource "aws_iam_instance_profile" "node" {
+  name = "${var.environment}-eks-node-profile"
+  role = aws_iam_role.node.name
 }
 
 data "tls_certificate" "cluster_cert" {
@@ -150,46 +150,6 @@ resource "aws_security_group" "cluster_sg" {
   }
 }
 
-resource "aws_security_group" "cluster_instance_sg" {
-  name   = "${var.environment}-cluster-instance-sg"
-  vpc_id = module.vpc.vpc_id
-
-  ingress {
-    from_port       = 1025
-    to_port         = 65535
-    protocol        = "TCP"
-    security_groups = [aws_security_group.cluster_sg.id]
-  }
-
-  ingress {
-    from_port       = 1025
-    to_port         = 65535
-    protocol        = "UDP"
-    security_groups = [aws_security_group.cluster_sg.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Environment = var.environment
-  }
-}
-
-resource "aws_security_group_rule" "cluster_instance_sg_self_rule" {
-  type              = "ingress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = -1
-
-  security_group_id        = aws_security_group.cluster_instance_sg.id
-  source_security_group_id = aws_security_group.cluster_instance_sg.id
-}
-
 /*
     EKS
 */
@@ -212,7 +172,7 @@ resource "aws_eks_cluster" "cluster" {
 resource "aws_eks_node_group" "default_node_group" {
   cluster_name    = local.cluster_name
   node_group_name = "${var.environment}-default-node-group"
-  node_role_arn   = aws_iam_role.instance.arn
+  node_role_arn   = aws_iam_role.node.arn
   subnet_ids      = module.vpc.public_subnets
 
   scaling_config {
@@ -227,8 +187,9 @@ resource "aws_eks_node_group" "default_node_group" {
 
   depends_on = [
     aws_eks_cluster.cluster,
-    aws_iam_role_policy_attachment.instance-AmazonEKSWorkerNodePolicy,
-    aws_iam_role_policy_attachment.instance-AmazonEKS_CNI_Policy
+    aws_iam_role_policy_attachment.node-AmazonEKSWorkerNodePolicy,
+    aws_iam_role_policy_attachment.node-AmazonEKS_CNI_Policy,
+    aws_iam_role_policy_attachment.node-AmazonEC2ContainerRegistryReadOnly
   ]
 
   tags = {
